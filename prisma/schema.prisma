@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  UNDECIDED
+  GOING
+  LATE
+  ABSENT
+}
+
+model Event {
+  id         Int         @id @default(autoincrement())
+  title      String
+  startsAt   DateTime?
+  location   String?
+  note       String?
+  createdAt  DateTime    @default(now())
+  Attendance Attendance[]
+}
+
+model Member {
+  id         Int         @id @default(autoincrement())
+  name       String
+  email      String?     @unique
+  createdAt  DateTime    @default(now())
+  Attendance Attendance[]
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  eventId   Int
+  memberId  Int
+  status    Status   @default(UNDECIDED)
+  comment   String?
+  updatedAt DateTime @updatedAt
+
+  event   Event  @relation(fields: [eventId], references: [id])
+  member  Member @relation(fields: [memberId], references: [id])
+
+  @@unique([eventId, memberId])
+}

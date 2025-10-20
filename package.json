@@ -1,0 +1,12 @@
+{
+  "name": "attend-js",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "start": "node app.js",
+    "prisma:studio": "npx prisma studio"
+  }
+}
