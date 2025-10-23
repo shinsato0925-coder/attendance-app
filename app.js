@@ -3,6 +3,8 @@ import express from "express";
 import pkg from "@prisma/client";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import 'dotenv/config';   // ← 既存importの上のほうに追加
+
 
 const { PrismaClient, Status } = pkg;
 const prisma = new PrismaClient();
@@ -49,7 +51,12 @@ app.get("/", async (req, res) => {
     orderBy: { updatedAt: "desc" },
   });
 
-  res.render("index", { events, currentEventId, attendances, members });
+  res.render("index", {
+  events,
+  currentEventId,
+  attendances,
+  members,
+  showList: false, 
 });
 
 // ----------------------------------------
@@ -82,6 +89,24 @@ app.post("/rsvp", async (req, res) => {
 
   res.redirect("/");
 });
+
+// app.js のどこか（ルート定義の前あたり）に追加
+function requireAdmin(req, res, next) {
+  const header = req.headers.authorization || "";
+  if (!header.startsWith("Basic ")) {
+    res.set("WWW-Authenticate", 'Basic realm="Admin Area"');
+    return res.status(401).send("Authentication required");
+  }
+  // "Basic base64(user:pass)" をデコード
+  const [, b64] = header.split(" ");
+  const [user, pass] = Buffer.from(b64, "base64").toString().split(":");
+  if (user === process.env.ADMIN_USER && pass === process.env.ADMIN_PASSWORD) {
+    return next();
+  }
+  res.set("WWW-Authenticate", 'Basic realm="Admin Area"');
+  return res.status(401).send("Unauthorized");
+}
+
 
 // ----------------------------------------
 // イベント追加
@@ -133,3 +158,21 @@ const port = process.env.PORT || 3000;
 app.listen(port, () =>
   console.log(`✅ Server started → http://localhost:${port}`)
 );
+
+app.get("/admin", requireAdmin, async (req, res) => {
+  const events = await prisma.event.findMany({ orderBy: { startsAt: "desc" } });
+  const currentEventId = Number(req.query.eventId || events[0]?.id);
+  const members = await prisma.member.findMany({ orderBy: { id: "asc" } });
+  const attendances = await prisma.attendance.findMany({
+    where: { eventId: currentEventId || undefined },
+    include: { member: true, event: true },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  const counts = { GOING: 0, LATE: 0, ABSENT: 0, UNDECIDED: 0 };
+  for (const a of attendances) counts[a.status] = (counts[a.status] || 0) + 1;
+
+  res.render("admin", { events, currentEventId, attendances, members, counts });
+  });
+
+});

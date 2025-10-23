@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>管理画面 - 出欠管理</title>
+  <style>
+    body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;margin:24px;line-height:1.6}
+    .wrap{max-width:980px;margin:0 auto}
+    table{border-collapse:collapse;width:100%;margin-top:8px}
+    th,td{border:1px solid #eee;padding:8px} th{background:#f8f8f8}
+    .summary{margin:12px 0;padding:8px;background:#f3f6ff;border:1px solid #dfe8ff;border-radius:8px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>管理画面</h1>
+
+  <form method="get" action="/admin">
+    <label>イベントの選択
+      <select name="eventId" onchange="this.form.submit()">
+        <% events.forEach(e => { %>
+          <option value="<%= e.id %>" <%= String(e.id)===String(currentEventId)?'selected':'' %>>
+            <%= e.title %> (<%= e.startsAt ? new Date(e.startsAt).toLocaleString('ja-JP') : '日時未設定' %>)
+          </option>
+        <% }) %>
+      </select>
+    </label>
+    <noscript><button>表示</button></noscript>
+  </form>
+
+  <div class="summary">
+    <b>集計</b>：
+    参加 <%= counts.GOING||0 %> ／ 遅刻 <%= counts.LATE||0 %> ／ 欠席 <%= counts.ABSENT||0 %> ／ 未定 <%= counts.UNDECIDED||0 %>
+  </div>
+
+  <h2>回答一覧</h2>
+  <table>
+    <thead><tr><th>名前</th><th>出欠</th><th>コメント</th><th>更新</th></tr></thead>
+    <tbody>
+    <% attendances.forEach(a => { %>
+      <tr>
+        <td><%= a.member.name %></td>
+        <td><%= a.status %></td>
+        <td><%= a.comment||'' %></td>
+        <td><%= new Date(a.updatedAt).toLocaleString('ja-JP') %></td>
+      </tr>
+    <% }) %>
+    <% if(attendances.length===0){ %>
+      <tr><td colspan="4">まだ回答がありません。</td></tr>
+    <% } %>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

@@ -3,29 +3,38 @@
 <head><meta charset="utf-8"><title>出欠管理</title></head>
 <body>
   <h1>出欠管理アプリ</h1>
+
   <form method="post" action="/rsvp">
     <input name="newName" placeholder="名前" required>
     <input name="newEmail" placeholder="メール(任意)">
-    <select name="status">
-      <option value="GOING">出席</option>
-      <option value="LATE">遅刻</option>
-      <option value="ABSENT">欠席</option>
-    </select>
+
+    <!-- ワンタップ送信用 3 ボタン -->
+    <div class="cta">
+      <button type="submit" name="status" value="GOING" class="going">✅ 出席</button>
+      <button type="submit" name="status" value="LATE"  class="late">⌛ 遅れて参加</button>
+      <button type="submit" name="status" value="ABSENT" class="absent">❌ 欠席</button>
+    </div>
+
     <input type="hidden" name="eventId" value="<%= currentEventId %>">
     <textarea name="comment" placeholder="コメント"></textarea>
-    <button>送信</button>
   </form>
 
-  <h2>参加状況</h2>
-  <table border="1" cellpadding="6">
-    <tr><th>名前</th><th>出欠</th><th>コメント</th></tr>
-    <% attendances.forEach(a => { %>
-      <tr>
-        <td><%= a.member.name %></td>
-        <td><%= a.status %></td>
-        <td><%= a.comment || '' %></td>
-      </tr>
-    <% }) %>
-  </table>
+  <% if (showList) { %>
+    <h2>回答一覧</h2>
+    <table border="1" cellpadding="6">
+      <tr><th>名前</th><th>出欠</th><th>コメント</th><th>更新</th></tr>
+      <% attendances.forEach(a => { %>
+        <tr>
+          <td><%= a.member.name %></td>
+          <td><%= a.status %></td>
+          <td><%= a.comment || '' %></td>
+          <td><%= new Date(a.updatedAt).toLocaleString('ja-JP') %></td>
+        </tr>
+      <% }) %>
+      <% if (attendances.length === 0) { %>
+        <tr><td colspan="4">まだ回答がありません。</td></tr>
+      <% } %>
+    </table>
+  <% } %>
 </body>
 </html>

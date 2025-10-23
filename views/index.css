@@ -1,0 +1,6 @@
+.cta{display:flex;gap:8px;margin:8px 0}
+.cta button{flex:1;font-weight:700;font-size:1.05rem;border-radius:10px;border:0;cursor:pointer;padding:14px}
+.cta .going{background:#e8f8ee}
+.cta .late{background:#f1f6ff}
+.cta .absent{background:#fff0f0}
+.cta .going:hover,.cta .late:hover,.cta .absent:hover{filter:brightness(.98)}
